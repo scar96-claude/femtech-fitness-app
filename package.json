@@ -18,17 +18,23 @@
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
-  "keywords": ["fitness", "women", "health", "menopause", "cycle-tracking"],
+  "keywords": [
+    "fitness",
+    "women",
+    "health",
+    "menopause",
+    "cycle-tracking"
+  ],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.27.0",
   "devDependencies": {
     "@types/node": "^25.0.9",
-    "prisma": "^7.2.0",
+    "prisma": "4.16.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@prisma/client": "^7.2.0"
+    "@prisma/client": "4.16.2"
   }
 }
