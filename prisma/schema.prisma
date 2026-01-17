@@ -1,0 +1,194 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum ActivityLevel {
+  SEDENTARY
+  LIGHT
+  MODERATE
+  ACTIVE
+}
+
+enum Goal {
+  STRENGTH
+  WEIGHT_LOSS
+  ENDURANCE
+  BONE_HEALTH
+}
+
+enum Demographic {
+  REPRODUCTIVE  // Ages 20-39
+  PERIMENOPAUSE // Ages 40-60
+}
+
+enum CycleType {
+  REGULAR
+  IRREGULAR
+  PERIMENOPAUSE
+  POSTMENOPAUSE
+}
+
+enum MovementPattern {
+  SQUAT
+  HINGE
+  PUSH
+  PULL
+  CARRY
+  CORE
+  CARDIO
+}
+
+enum Equipment {
+  NONE      // Bodyweight
+  DUMBBELLS
+  BARBELL
+  MACHINE
+  BANDS
+}
+
+enum Phase {
+  ANY
+  FOLLICULAR
+  OVULATORY
+  LUTEAL
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum SplitType {
+  FULL_BODY
+  UPPER_LOWER
+  PUSH_PULL_LEGS
+}
+
+// ============================================================================
+// MODELS
+// ============================================================================
+
+/// User profile containing core demographic and goal information
+model UserProfile {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  dateOfBirth   DateTime      @map("date_of_birth")
+  heightCm      Decimal?      @map("height_cm") @db.Decimal(5, 2)
+  weightKg      Decimal?      @map("weight_kg") @db.Decimal(5, 2)
+  activityLevel ActivityLevel @default(MODERATE) @map("activity_level")
+  primaryGoal   Goal          @map("primary_goal")
+  demographic   Demographic   // Computed: age < 40 = REPRODUCTIVE, age >= 40 = PERIMENOPAUSE
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  healthMetadata  HealthMetadata?
+  cycleLogs       CycleLog[]
+  performanceLogs PerformanceLog[]
+
+  @@index([email])
+  @@index([demographic])
+  @@index([dateOfBirth])
+  @@map("user_profiles")
+}
+
+/// Health metadata for tracking risk factors and cycle information
+model HealthMetadata {
+  id              String    @id @default(uuid())
+  userId          String    @unique @map("user_id")
+  pelvicRisk      Boolean   @default(false) @map("pelvic_risk")
+  boneDensityRisk Boolean   @default(false) @map("bone_density_risk")
+  cycleType       CycleType @map("cycle_type")
+  injuryHistory   Json      @default("[]") @map("injury_history") // Array of {type, date, notes}
+  medications     Json      @default("[]") // Array of {name, dosage}
+  lastPeriodDate  DateTime? @map("last_period_date")
+  avgCycleLength  Int       @default(28) @map("avg_cycle_length")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("health_metadata")
+}
+
+/// Exercise library containing all exercises with safety flags
+model Exercise {
+  id                  String          @id @default(uuid())
+  name                String          @db.VarChar(100)
+  movementPattern     MovementPattern @map("movement_pattern")
+  equipmentRequired   Equipment       @map("equipment_required")
+  primaryMuscle       String?         @map("primary_muscle") @db.VarChar(50)
+  videoUrl            String?         @map("video_url") @db.VarChar(500)
+  isOsteoSafe         Boolean         @default(true) @map("is_osteo_safe")
+  isPelvicSafe        Boolean         @default(true) @map("is_pelvic_safe")
+  menopausePriority   Boolean         @default(false) @map("menopause_priority")
+  phaseRecommendation Phase           @default(ANY) @map("phase_recommendation")
+  difficulty          Difficulty
+
+  performanceLogs PerformanceLog[]
+
+  @@index([movementPattern])
+  @@index([equipmentRequired])
+  @@index([menopausePriority])
+  @@map("exercise_library")
+}
+
+/// Cycle log for tracking menstrual cycle data
+model CycleLog {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  periodStartDate DateTime  @map("period_start_date")
+  periodEndDate   DateTime? @map("period_end_date")
+  symptoms        Json      @default("{}") // {energy: 1-5, bloating: 1-5, cramps: 1-5, mood: 1-5}
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, periodStartDate])
+  @@map("cycle_logs")
+}
+
+/// Performance log for tracking workout performance
+model PerformanceLog {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  exerciseId  String   @map("exercise_id")
+  workoutDate DateTime @map("workout_date")
+  sets        Int?
+  reps        Int?
+  weightKg    Decimal? @map("weight_kg") @db.Decimal(5, 2)
+  rpe         Int?     // 1-10 scale, validate in application layer
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user     UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise    @relation(fields: [exerciseId], references: [id])
+
+  @@index([userId, exerciseId, workoutDate])
+  @@map("performance_logs")
+}
+
+/// Workout template for predefined workout structures
+model WorkoutTemplate {
+  id             String      @id @default(uuid())
+  name           String      @db.VarChar(100)
+  splitType      SplitType   @map("split_type")
+  targetAudience Demographic @map("target_audience")
+  exerciseOrder  Json        // Array of exercise IDs in order
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  @@index([targetAudience])
+  @@map("workout_templates")
+}
