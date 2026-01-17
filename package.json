@@ -35,6 +35,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@prisma/client": "4.16.2"
+    "@prisma/client": "4.16.2",
+    "date-fns": "^4.1.0"
   }
 }
