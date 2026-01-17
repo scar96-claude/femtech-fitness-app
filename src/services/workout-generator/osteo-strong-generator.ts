@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Exercise } from '@prisma/client';
 import { filterByEquipment } from './equipment-filter';
 import {
   GenerateWorkoutInput,
@@ -41,13 +41,15 @@ const MOVEMENT_PATTERNS = ['SQUAT', 'HINGE', 'PUSH', 'PULL', 'CARRY'] as const;
  * - Extended warmup for joint protection
  *
  * @param input - Workout generation input parameters
+ * @param preFilteredExercises - Optional pre-filtered exercises (safety-filtered)
  * @returns Generated workout plan
  */
 export async function generateOsteoStrongWorkout(
-  input: GenerateWorkoutInput
+  input: GenerateWorkoutInput,
+  preFilteredExercises?: Exercise[]
 ): Promise<GeneratedWorkout> {
-  // 1. Get all exercises and filter by equipment
-  const allExercises = await prisma.exercise.findMany();
+  // 1. Get exercises - use pre-filtered if provided, otherwise fetch from DB
+  const allExercises = preFilteredExercises || (await prisma.exercise.findMany());
   const availableExercises = filterByEquipment(allExercises, input.equipment);
 
   // 2. Select exercises by movement pattern (bone-loading priority)

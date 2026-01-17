@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Exercise } from '@prisma/client';
 import { getCurrentPhase, getPhaseConfig } from './cycle-calculator';
 import { filterByEquipment } from './equipment-filter';
 import {
@@ -48,11 +48,13 @@ function mapPhaseToDbValue(phase: string): string {
  *
  * @param input - Workout generation input parameters
  * @param user - User data including health metadata
+ * @param preFilteredExercises - Optional pre-filtered exercises (safety-filtered)
  * @returns Generated workout plan
  */
 export async function generateCycleSyncWorkout(
   input: GenerateWorkoutInput,
-  user: CycleSyncUserData
+  user: CycleSyncUserData,
+  preFilteredExercises?: Exercise[]
 ): Promise<GeneratedWorkout> {
   // 1. Get current phase and configuration
   const phase = getCurrentPhase(
@@ -61,8 +63,8 @@ export async function generateCycleSyncWorkout(
   );
   const config = getPhaseConfig(phase);
 
-  // 2. Get all exercises and filter by equipment
-  const allExercises = await prisma.exercise.findMany();
+  // 2. Get exercises - use pre-filtered if provided, otherwise fetch from DB
+  const allExercises = preFilteredExercises || (await prisma.exercise.findMany());
   const availableExercises = filterByEquipment(allExercises, input.equipment);
 
   // 3. Select exercises by movement pattern
