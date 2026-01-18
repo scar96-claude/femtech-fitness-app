@@ -103,4 +103,15 @@ export const apiClient = {
     api.post('/cycle/log-period', { date }),
 
   getCycleLogs: () => api.get('/cycle/logs'),
+
+  // Dashboard
+  getDashboard: () => api.get('/dashboard'),
+
+  getWorkoutForToday: () => api.get('/workouts/today'),
+
+  logQuickAction: (action: 'period' | 'sleep' | 'energy' | 'symptoms', data: Record<string, unknown>) =>
+    api.post(`/quick-actions/${action}`, data),
+
+  logSymptoms: (symptoms: Record<string, number>) =>
+    api.post('/symptoms/log', { symptoms, date: new Date().toISOString() }),
 };
