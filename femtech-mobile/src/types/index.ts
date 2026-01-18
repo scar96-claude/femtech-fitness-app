@@ -158,3 +158,50 @@ export type RootStackParamList = {
   '(onboarding)': undefined;
   '(tabs)': undefined;
 };
+
+// Dashboard types
+export interface DashboardData {
+  user: {
+    firstName: string;
+    demographic: 'reproductive' | 'perimenopause';
+  };
+  workout: {
+    id: string;
+    name: string;
+    exerciseCount: number;
+    estimatedMinutes: number;
+    focusArea: string;
+    isRestDay: boolean;
+  } | null;
+  stats: {
+    workoutsThisWeek: number;
+    workoutsThisMonth: number;
+    currentStreak: number;
+    totalWorkouts: number;
+    personalRecords: number;
+  };
+  cycleData?: {
+    currentPhase: 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
+    cycleDay: number;
+    daysUntilNextPhase: number;
+    lastPeriodDate: string;
+  };
+  weekProgress: {
+    completed: number;
+    planned: number;
+    days: {
+      day: string;
+      completed: boolean;
+      isToday: boolean;
+    }[];
+  };
+}
+
+export interface CyclePhaseInfo {
+  name: 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
+  displayName: string;
+  color: string;
+  description: string;
+  workoutTip: string;
+  dayRange: string;
+}

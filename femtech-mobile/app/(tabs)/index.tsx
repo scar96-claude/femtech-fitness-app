@@ -1,30 +1,163 @@
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+  Text,
+  StyleSheet,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card } from '@/components/ui/Card';
+import { useUserStore } from '@/stores/userStore';
+import { useDashboard } from '@/hooks/useDashboard';
+import { GreetingHeader } from '@/components/dashboard/GreetingHeader';
+import { CyclePhaseCard } from '@/components/dashboard/CyclePhaseCard';
+import { StreakCard } from '@/components/dashboard/StreakCard';
+import { TodayWorkoutCard } from '@/components/dashboard/TodayWorkoutCard';
+import { WeeklyProgress } from '@/components/dashboard/WeeklyProgress';
+import { QuickStats } from '@/components/dashboard/QuickStats';
+import { QuickActions } from '@/components/dashboard/QuickActions';
+import { LogPeriodModal } from '@/components/modals/LogPeriodModal';
+import { LogSymptomsModal } from '@/components/modals/LogSymptomsModal';
 import { COLORS } from '@/constants/colors';
 
-export default function HomeScreen() {
+export default function DashboardScreen() {
+  const { fetchProfile } = useUserStore();
+  const { isLoading, data, cycleInfo, isReproductive, refetch } = useDashboard();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Modal states
+  const [showPeriodModal, setShowPeriodModal] = useState(false);
+  const [showSymptomsModal, setShowSymptomsModal] = useState(false);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  if (isLoading && !data) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary[500]} />
+        <Text style={styles.loadingText}>Loading your dashboard...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // Mock data for development (remove when API is connected)
+  const mockData = {
+    stats: {
+      workoutsThisWeek: 3,
+      workoutsThisMonth: 12,
+      currentStreak: 5,
+      totalWorkouts: 48,
+      personalRecords: 7,
+    },
+    workout: {
+      id: '1',
+      name: 'Full Body Strength',
+      exerciseCount: 6,
+      estimatedMinutes: 45,
+      focusArea: 'Full Body',
+      isRestDay: false,
+    },
+    weekProgress: {
+      completed: 3,
+      planned: 4,
+      days: [
+        { day: 'M', completed: true, isToday: false },
+        { day: 'T', completed: true, isToday: false },
+        { day: 'W', completed: false, isToday: false },
+        { day: 'T', completed: true, isToday: true },
+        { day: 'F', completed: false, isToday: false },
+        { day: 'S', completed: false, isToday: false },
+        { day: 'S', completed: false, isToday: false },
+      ],
+    },
+  };
+
+  const displayData = data || mockData;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.header}>Dashboard</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Greeting Header */}
+        <GreetingHeader
+          cyclePhase={cycleInfo?.phase.displayName}
+          streak={displayData.stats.currentStreak}
+          isReproductive={isReproductive}
+        />
 
-        <Card variant="elevated" style={styles.card}>
-          <Text style={styles.cardTitle}>Welcome to FemTech Fitness</Text>
-          <Text style={styles.cardText}>
-            Your personalized dashboard will show your current cycle phase,
-            today's workout recommendation, and recent progress.
-          </Text>
-        </Card>
+        {/* Cycle Phase Card (Reproductive) or Streak Card (Perimenopause) */}
+        {isReproductive && cycleInfo ? (
+          <CyclePhaseCard
+            phase={cycleInfo.phase}
+            cycleDay={cycleInfo.cycleDay}
+            totalDays={cycleInfo.totalDays}
+            daysUntilNextPhase={cycleInfo.daysUntilNextPhase}
+          />
+        ) : (
+          <StreakCard
+            currentStreak={displayData.stats.currentStreak}
+            workoutsThisMonth={displayData.stats.workoutsThisMonth}
+          />
+        )}
 
-        <Card variant="outlined" style={styles.card}>
-          <Text style={styles.sectionTitle}>Coming in Phase 4c:</Text>
-          <Text style={styles.listItem}>• Cycle phase indicator</Text>
-          <Text style={styles.listItem}>• Today's workout preview</Text>
-          <Text style={styles.listItem}>• Weekly progress summary</Text>
-          <Text style={styles.listItem}>• Quick actions</Text>
-        </Card>
-      </View>
+        {/* Today's Workout */}
+        <TodayWorkoutCard
+          workout={displayData.workout}
+          phaseNote={cycleInfo?.phase.workoutTip}
+          isReproductive={isReproductive}
+        />
+
+        {/* Weekly Progress */}
+        <WeeklyProgress
+          completed={displayData.weekProgress.completed}
+          planned={displayData.weekProgress.planned}
+          days={displayData.weekProgress.days}
+        />
+
+        {/* Quick Stats */}
+        <QuickStats
+          workoutsThisMonth={displayData.stats.workoutsThisMonth}
+          personalRecords={displayData.stats.personalRecords}
+          currentStreak={displayData.stats.currentStreak}
+          cycleDay={cycleInfo?.cycleDay}
+          isReproductive={isReproductive}
+        />
+
+        {/* Quick Actions */}
+        <QuickActions
+          isReproductive={isReproductive}
+          onLogPeriod={() => setShowPeriodModal(true)}
+          onLogSymptoms={() => setShowSymptomsModal(true)}
+          onLogSleep={() => console.log('Log sleep')}
+          onLogEnergy={() => console.log('Log energy')}
+        />
+
+        {/* Bottom Padding */}
+        <View style={styles.bottomPadding} />
+      </ScrollView>
+
+      {/* Modals */}
+      <LogPeriodModal
+        visible={showPeriodModal}
+        onClose={() => setShowPeriodModal(false)}
+      />
+      <LogSymptomsModal
+        visible={showSymptomsModal}
+        onClose={() => setShowSymptomsModal(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -34,40 +167,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.neutral[50],
   },
-  content: {
+  loadingContainer: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
+    backgroundColor: COLORS.neutral[50],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  header: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.neutral[900],
-    marginBottom: 24,
+  loadingText: {
+    color: COLORS.neutral[500],
+    marginTop: 16,
   },
-  card: {
-    marginBottom: 16,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.neutral[900],
-    marginBottom: 8,
-  },
-  cardText: {
-    fontSize: 14,
-    color: COLORS.neutral[600],
-    lineHeight: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.neutral[700],
-    marginBottom: 12,
-  },
-  listItem: {
-    fontSize: 14,
-    color: COLORS.neutral[600],
-    marginBottom: 6,
+  bottomPadding: {
+    height: 32,
   },
 });
