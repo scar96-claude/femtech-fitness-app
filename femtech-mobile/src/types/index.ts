@@ -205,3 +205,51 @@ export interface CyclePhaseInfo {
   workoutTip: string;
   dayRange: string;
 }
+
+// Workout Player types
+export interface ActiveWorkoutExercise {
+  id: string;
+  exerciseId: string;
+  name: string;
+  sets: number;
+  reps: number | string;
+  restSeconds: number;
+  targetRpe: number;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  notes?: string;
+  movementPattern: string;
+}
+
+export interface ActiveWorkout {
+  id: string;
+  name: string;
+  exercises: ActiveWorkoutExercise[];
+  protocol: 'cycle_sync' | 'osteo_strong';
+  phase?: string;
+  estimatedMinutes: number;
+}
+
+export interface SetLog {
+  setNumber: number;
+  reps: number;
+  weightKg: number | null;
+  completed: boolean;
+  timestamp: Date;
+}
+
+export interface ExerciseLog {
+  exerciseId: string;
+  sets: SetLog[];
+  rpe: number | null;
+  notes?: string;
+}
+
+export interface WorkoutLog {
+  workoutId: string;
+  startTime: Date;
+  endTime?: Date;
+  exercises: ExerciseLog[];
+  totalDuration?: number;
+  completed: boolean;
+}
