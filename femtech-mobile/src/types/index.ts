@@ -253,3 +253,86 @@ export interface WorkoutLog {
   totalDuration?: number;
   completed: boolean;
 }
+
+// Progress Types
+export interface WorkoutHistoryItem {
+  id: string;
+  name: string;
+  date: string;
+  duration: number;
+  exerciseCount: number;
+  totalSets: number;
+  totalReps: number;
+  totalWeight: number;
+  avgRpe: number;
+  protocol: 'cycle_sync' | 'osteo_strong';
+  phase?: string;
+}
+
+export interface PersonalRecord {
+  exerciseId: string;
+  exerciseName: string;
+  weight: number;
+  reps: number;
+  date: string;
+  previousRecord?: {
+    weight: number;
+    date: string;
+  };
+}
+
+export interface StrengthData {
+  exerciseId: string;
+  exerciseName: string;
+  data: {
+    date: string;
+    weight: number;
+    reps: number;
+  }[];
+}
+
+export interface CycleHistoryItem {
+  id: string;
+  periodStartDate: string;
+  periodEndDate?: string;
+  cycleLength: number;
+  symptoms?: {
+    energy: number;
+    mood: number;
+    bloating: number;
+    cramps: number;
+  };
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlockedAt?: string;
+  progress?: number;
+  target?: number;
+}
+
+export interface ProgressStats {
+  totalWorkouts: number;
+  totalMinutes: number;
+  totalWeight: number;
+  currentStreak: number;
+  longestStreak: number;
+  workoutsThisMonth: number;
+  avgWorkoutsPerWeek: number;
+  personalRecordsCount: number;
+}
+
+// Settings Types
+export interface UserPreferences {
+  equipment: 'bodyweight' | 'home_gym' | 'full_gym';
+  frequencyPerWeek: number;
+  includeCardio: boolean;
+  restTimerSound: boolean;
+  hapticFeedback: boolean;
+  workoutReminders: boolean;
+  reminderTime?: string;
+  units: 'metric' | 'imperial';
+}

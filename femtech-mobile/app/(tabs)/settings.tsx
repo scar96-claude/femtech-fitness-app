@@ -1,77 +1,222 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { View, ScrollView, Text, Alert, Linking, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { useUserStore } from '@/stores/userStore';
+import { ProfileCard } from '@/components/settings/ProfileCard';
+import { SettingsSection } from '@/components/settings/SettingsSection';
+import { SettingsRow } from '@/components/settings/SettingsRow';
+import { EditProfileModal } from '@/components/settings/EditProfileModal';
+import { COLORS } from '@/constants/colors';
 import {
-  User,
+  Dumbbell,
+  Calendar,
   Bell,
+  Moon,
+  Vibrate,
+  Ruler,
+  Heart,
   Shield,
   HelpCircle,
+  FileText,
+  Mail,
   LogOut,
-  ChevronRight,
+  Trash2,
 } from 'lucide-react-native';
-import { COLORS } from '@/constants/colors';
 
 export default function SettingsScreen() {
   const { logout } = useAuthStore();
+  const { profile, healthMetadata } = useUserStore();
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/(auth)/welcome');
+  // Preference states (would come from store in production)
+  const [hapticEnabled, setHapticEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [remindersEnabled, setRemindersEnabled] = useState(false);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/(auth)/welcome');
+          },
+        },
+      ]
+    );
   };
 
-  const menuItems = [
-    { icon: User, label: 'Profile', description: 'Edit your personal info' },
-    { icon: Bell, label: 'Notifications', description: 'Manage alerts' },
-    { icon: Shield, label: 'Privacy', description: 'Data and security' },
-    { icon: HelpCircle, label: 'Help & Support', description: 'Get help' },
-  ];
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This action cannot be undone. All your data will be permanently deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Contact Support',
+              'Please email support@femtech.app to delete your account.'
+            );
+          },
+        },
+      ]
+    );
+  };
+
+  const getEquipmentLabel = () => {
+    const labels: Record<string, string> = {
+      bodyweight: 'Bodyweight',
+      home_gym: 'Home Gym',
+      full_gym: 'Full Gym',
+    };
+    return labels[profile?.activityLevel || 'bodyweight'] || 'Not set';
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.header}>Settings</Text>
-
-        <Card variant="elevated" style={styles.menuCard}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.label}
-              style={[
-                styles.menuItem,
-                index < menuItems.length - 1 && styles.menuItemBorder,
-              ]}
-            >
-              <View style={styles.menuItemLeft}>
-                <View style={styles.iconBox}>
-                  <item.icon size={20} color={COLORS.primary[500]} />
-                </View>
-                <View>
-                  <Text style={styles.menuLabel}>{item.label}</Text>
-                  <Text style={styles.menuDescription}>{item.description}</Text>
-                </View>
-              </View>
-              <ChevronRight size={20} color={COLORS.neutral[400]} />
-            </TouchableOpacity>
-          ))}
-        </Card>
-
-        <Text style={styles.note}>
-          Full settings implementation coming in Phase 4e
-        </Text>
-
-        <View style={styles.footer}>
-          <Button
-            title="Sign Out"
-            variant="outline"
-            onPress={handleLogout}
-            fullWidth
-          />
-
-          <Text style={styles.version}>Version 1.0.0</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Settings</Text>
         </View>
-      </View>
+
+        {/* Profile Card */}
+        <ProfileCard onEdit={() => setShowEditProfile(true)} />
+
+        {/* Workout Preferences */}
+        <SettingsSection title="Workout Preferences">
+          <SettingsRow
+            icon={<Dumbbell size={18} color={COLORS.primary[500]} />}
+            label="Equipment"
+            value={getEquipmentLabel()}
+            onPress={() => {}}
+          />
+          <SettingsRow
+            icon={<Calendar size={18} color={COLORS.success} />}
+            label="Frequency"
+            value="3 days/week"
+            onPress={() => {}}
+          />
+          <SettingsRow
+            icon={<Heart size={18} color="#ef4444" />}
+            label="Include Cardio"
+            value="Yes"
+            onPress={() => {}}
+            showDivider={false}
+          />
+        </SettingsSection>
+
+        {/* Health Settings */}
+        <SettingsSection title="Health">
+          <SettingsRow
+            icon={<Shield size={18} color="#8b5cf6" />}
+            label="Health Screening"
+            value={
+              healthMetadata?.pelvicRisk || healthMetadata?.boneDensityRisk
+                ? 'Modified'
+                : 'Standard'
+            }
+            onPress={() => {}}
+          />
+          {profile?.demographic === 'reproductive' && (
+            <SettingsRow
+              icon={<Moon size={18} color="#f59e0b" />}
+              label="Cycle Settings"
+              value={`${healthMetadata?.avgCycleLength || 28} day cycle`}
+              onPress={() => {}}
+              showDivider={false}
+            />
+          )}
+        </SettingsSection>
+
+        {/* App Settings */}
+        <SettingsSection title="App Settings">
+          <SettingsRow
+            icon={<Bell size={18} color={COLORS.primary[500]} />}
+            label="Workout Reminders"
+            isSwitch
+            switchValue={remindersEnabled}
+            onSwitchChange={setRemindersEnabled}
+          />
+          <SettingsRow
+            icon={<Vibrate size={18} color={COLORS.neutral[500]} />}
+            label="Haptic Feedback"
+            isSwitch
+            switchValue={hapticEnabled}
+            onSwitchChange={setHapticEnabled}
+          />
+          <SettingsRow
+            icon={<Ruler size={18} color={COLORS.neutral[500]} />}
+            label="Units"
+            value="Metric"
+            onPress={() => {}}
+            showDivider={false}
+          />
+        </SettingsSection>
+
+        {/* Support */}
+        <SettingsSection title="Support">
+          <SettingsRow
+            icon={<HelpCircle size={18} color={COLORS.primary[500]} />}
+            label="Help Center"
+            onPress={() => Linking.openURL('https://femtech.app/help')}
+          />
+          <SettingsRow
+            icon={<Mail size={18} color={COLORS.primary[500]} />}
+            label="Contact Us"
+            onPress={() => Linking.openURL('mailto:support@femtech.app')}
+          />
+          <SettingsRow
+            icon={<FileText size={18} color={COLORS.neutral[500]} />}
+            label="Privacy Policy"
+            onPress={() => Linking.openURL('https://femtech.app/privacy')}
+          />
+          <SettingsRow
+            icon={<FileText size={18} color={COLORS.neutral[500]} />}
+            label="Terms of Service"
+            onPress={() => Linking.openURL('https://femtech.app/terms')}
+            showDivider={false}
+          />
+        </SettingsSection>
+
+        {/* Account */}
+        <SettingsSection title="Account">
+          <SettingsRow
+            icon={<LogOut size={18} color={COLORS.neutral[600]} />}
+            label="Sign Out"
+            onPress={handleLogout}
+          />
+          <SettingsRow
+            icon={<Trash2 size={18} color="#ef4444" />}
+            label="Delete Account"
+            onPress={handleDeleteAccount}
+            isDestructive
+            showDivider={false}
+          />
+        </SettingsSection>
+
+        {/* App Info */}
+        <View style={styles.appInfo}>
+          <Text style={styles.appName}>FemTech Fitness</Text>
+          <Text style={styles.appVersion}>Version 1.0.0</Text>
+        </View>
+      </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        visible={showEditProfile}
+        onClose={() => setShowEditProfile(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -81,69 +226,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.neutral[50],
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-  },
   header: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.neutral[900],
-    marginBottom: 24,
-  },
-  menuCard: {
-    paddingVertical: 8,
-    paddingHorizontal: 0,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-  },
-  menuItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.neutral[100],
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: COLORS.primary[50],
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  menuLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: COLORS.neutral[900],
-  },
-  menuDescription: {
-    fontSize: 12,
-    color: COLORS.neutral[500],
-    marginTop: 2,
-  },
-  note: {
-    fontSize: 12,
-    color: COLORS.neutral[400],
-    textAlign: 'center',
-    marginTop: 24,
-  },
-  footer: {
-    marginTop: 'auto',
+    paddingHorizontal: 24,
+    paddingTop: 16,
     paddingBottom: 16,
   },
-  version: {
-    fontSize: 12,
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: COLORS.neutral[900],
+  },
+  appInfo: {
+    paddingVertical: 32,
+    alignItems: 'center',
+  },
+  appName: {
+    fontSize: 14,
     color: COLORS.neutral[400],
-    textAlign: 'center',
-    marginTop: 16,
+  },
+  appVersion: {
+    fontSize: 12,
+    color: COLORS.neutral[300],
+    marginTop: 4,
   },
 });

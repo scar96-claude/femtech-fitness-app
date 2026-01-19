@@ -114,4 +114,36 @@ export const apiClient = {
 
   logSymptoms: (symptoms: Record<string, number>) =>
     api.post('/symptoms/log', { symptoms, date: new Date().toISOString() }),
+
+  // Progress endpoints
+  getWorkoutHistoryPaginated: (limit?: number, offset?: number) =>
+    api.get('/workouts/history', { params: { limit, offset } }),
+
+  getProgressStats: () =>
+    api.get('/progress/stats'),
+
+  getPersonalRecords: () =>
+    api.get('/progress/records'),
+
+  getStrengthData: (exerciseId: string) =>
+    api.get(`/progress/strength/${exerciseId}`),
+
+  getCycleHistory: () =>
+    api.get('/cycle/history'),
+
+  getAchievements: () =>
+    api.get('/progress/achievements'),
+
+  // Settings endpoints
+  getPreferences: () =>
+    api.get('/user/preferences'),
+
+  updatePreferences: (prefs: Record<string, unknown>) =>
+    api.patch('/user/preferences', prefs),
+
+  deleteAccount: () =>
+    api.delete('/user/account'),
+
+  exportData: () =>
+    api.get('/user/export'),
 };
