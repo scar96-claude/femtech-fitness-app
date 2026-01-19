@@ -13,7 +13,15 @@ import { useOnboardingStore } from '@/stores/onboardingStore';
 import { ChevronLeft, ShieldCheck, AlertTriangle } from 'lucide-react-native';
 import { COLORS } from '@/constants/colors';
 
-type HealthQuestionKey = keyof ReturnType<typeof useOnboardingStore>['healthScreening'];
+// Define the health screening keys to match the store
+type HealthQuestionKey =
+  | 'pelvicFloorIssues'
+  | 'diastasisRecti'
+  | 'recentPregnancy'
+  | 'osteoporosisRisk'
+  | 'jointIssues'
+  | 'backProblems'
+  | 'cardiovascularConditions';
 
 const HEALTH_QUESTIONS: { key: HealthQuestionKey; question: string; info?: string }[] = [
   {

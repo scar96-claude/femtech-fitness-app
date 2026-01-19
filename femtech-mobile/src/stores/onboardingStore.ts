@@ -1,5 +1,21 @@
 import { create } from 'zustand';
 
+interface CycleData {
+  lastPeriodDate: Date | null;
+  cycleLength: number;
+  regularity: 'regular' | 'irregular' | 'unknown' | null;
+}
+
+interface HealthScreening {
+  pelvicFloorIssues: boolean;
+  diastasisRecti: boolean;
+  recentPregnancy: boolean;
+  osteoporosisRisk: boolean;
+  jointIssues: boolean;
+  backProblems: boolean;
+  cardiovascularConditions: boolean;
+}
+
 interface OnboardingData {
   // Screen 1: Age
   dateOfBirth: Date | null;
@@ -15,22 +31,17 @@ interface OnboardingData {
   primaryGoal: 'strength' | 'weight_loss' | 'endurance' | 'bone_health' | null;
 
   // Screen 5: Equipment
-  equipment: 'bodyweight' | 'home_gym' | 'full_gym' | null;
+  equipmentAccess: 'bodyweight' | 'home_gym' | 'full_gym' | null;
 
   // Screen 6: Frequency
-  frequencyPerWeek: number;
+  workoutFrequency: number;
   includeCardio: boolean;
 
   // Screen 7: Health Screening
-  healthResponses: {
-    questionId: string;
-    answer: boolean;
-  }[];
+  healthScreening: HealthScreening;
 
   // Screen 8: Cycle (only for reproductive demographic)
-  lastPeriodDate: Date | null;
-  avgCycleLength: number;
-  cycleType: 'regular' | 'irregular' | null;
+  cycleData: CycleData;
 }
 
 interface OnboardingState extends OnboardingData {
@@ -45,14 +56,11 @@ interface OnboardingState extends OnboardingData {
   setMetrics: (height: number, weight: number) => void;
   setActivityLevel: (level: OnboardingData['activityLevel']) => void;
   setPrimaryGoal: (goal: OnboardingData['primaryGoal']) => void;
-  setEquipment: (equipment: OnboardingData['equipment']) => void;
-  setFrequency: (frequency: number, cardio: boolean) => void;
-  setHealthResponse: (questionId: string, answer: boolean) => void;
-  setCycleData: (
-    lastPeriod: Date | null,
-    length: number,
-    type: 'regular' | 'irregular'
-  ) => void;
+  setEquipmentAccess: (equipment: OnboardingData['equipmentAccess']) => void;
+  setWorkoutFrequency: (frequency: number) => void;
+  setIncludeCardio: (include: boolean) => void;
+  setHealthScreening: (key: keyof HealthScreening, value: boolean) => void;
+  setCycleData: (data: Partial<CycleData>) => void;
 
   nextStep: () => void;
   prevStep: () => void;
@@ -62,19 +70,33 @@ interface OnboardingState extends OnboardingData {
   getData: () => OnboardingData;
 }
 
+const initialHealthScreening: HealthScreening = {
+  pelvicFloorIssues: false,
+  diastasisRecti: false,
+  recentPregnancy: false,
+  osteoporosisRisk: false,
+  jointIssues: false,
+  backProblems: false,
+  cardiovascularConditions: false,
+};
+
+const initialCycleData: CycleData = {
+  lastPeriodDate: null,
+  cycleLength: 28,
+  regularity: null,
+};
+
 const initialState: OnboardingData = {
   dateOfBirth: null,
   heightCm: null,
   weightKg: null,
   activityLevel: null,
   primaryGoal: null,
-  equipment: null,
-  frequencyPerWeek: 3,
+  equipmentAccess: null,
+  workoutFrequency: 3,
   includeCardio: true,
-  healthResponses: [],
-  lastPeriodDate: null,
-  avgCycleLength: 28,
-  cycleType: null,
+  healthScreening: initialHealthScreening,
+  cycleData: initialCycleData,
 };
 
 export const useOnboardingStore = create<OnboardingState>((set, get) => ({
@@ -105,31 +127,34 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     set({ primaryGoal: goal });
   },
 
-  setEquipment: (equipment) => {
-    set({ equipment: equipment });
+  setEquipmentAccess: (equipment) => {
+    set({ equipmentAccess: equipment });
   },
 
-  setFrequency: (frequency, cardio) => {
-    set({ frequencyPerWeek: frequency, includeCardio: cardio });
+  setWorkoutFrequency: (frequency) => {
+    set({ workoutFrequency: frequency });
   },
 
-  setHealthResponse: (questionId, answer) => {
-    set((state) => {
-      const existing = state.healthResponses.filter(
-        (r) => r.questionId !== questionId
-      );
-      return {
-        healthResponses: [...existing, { questionId, answer }],
-      };
-    });
+  setIncludeCardio: (include) => {
+    set({ includeCardio: include });
   },
 
-  setCycleData: (lastPeriod, length, type) => {
-    set({
-      lastPeriodDate: lastPeriod,
-      avgCycleLength: length,
-      cycleType: type,
-    });
+  setHealthScreening: (key, value) => {
+    set((state) => ({
+      healthScreening: {
+        ...state.healthScreening,
+        [key]: value,
+      },
+    }));
+  },
+
+  setCycleData: (data) => {
+    set((state) => ({
+      cycleData: {
+        ...state.cycleData,
+        ...data,
+      },
+    }));
   },
 
   nextStep: () => set((state) => ({ currentStep: state.currentStep + 1 })),
@@ -147,13 +172,11 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
       weightKg: state.weightKg,
       activityLevel: state.activityLevel,
       primaryGoal: state.primaryGoal,
-      equipment: state.equipment,
-      frequencyPerWeek: state.frequencyPerWeek,
+      equipmentAccess: state.equipmentAccess,
+      workoutFrequency: state.workoutFrequency,
       includeCardio: state.includeCardio,
-      healthResponses: state.healthResponses,
-      lastPeriodDate: state.lastPeriodDate,
-      avgCycleLength: state.avgCycleLength,
-      cycleType: state.cycleType,
+      healthScreening: state.healthScreening,
+      cycleData: state.cycleData,
     };
   },
 }));

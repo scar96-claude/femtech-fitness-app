@@ -82,11 +82,11 @@ export const apiClient = {
   // User
   getProfile: () => api.get('/user/profile'),
 
-  updateProfile: (data: Partial<UserProfile>) =>
+  updateProfile: (data: Record<string, unknown>) =>
     api.patch('/user/profile', data),
 
   // Health metadata
-  updateHealthMetadata: (data: Partial<HealthMetadata>) =>
+  updateHealthMetadata: (data: Record<string, unknown>) =>
     api.patch('/user/health-metadata', data),
 
   // Workouts
