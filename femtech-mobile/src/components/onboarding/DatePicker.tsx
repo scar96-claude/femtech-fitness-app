@@ -13,10 +13,13 @@ import { COLORS } from '@/constants/colors';
 interface DatePickerProps {
   value: Date | null;
   onChange: (date: Date) => void;
-  label: string;
+  label?: string;
   placeholder?: string;
   maximumDate?: Date;
   minimumDate?: Date;
+  // Aliases for convenience
+  maxDate?: Date;
+  minDate?: Date;
 }
 
 export function DatePicker({
@@ -26,7 +29,13 @@ export function DatePicker({
   placeholder = 'Select date',
   maximumDate,
   minimumDate,
+  maxDate,
+  minDate,
 }: DatePickerProps) {
+  // Support both naming conventions
+  const effectiveMaxDate = maximumDate ?? maxDate;
+  const effectiveMinDate = minimumDate ?? minDate;
+
   const [showPicker, setShowPicker] = useState(false);
   const [tempYear, setTempYear] = useState(
     value?.getFullYear() || new Date().getFullYear() - 30
@@ -51,8 +60,8 @@ export function DatePicker({
   };
 
   const years = [];
-  const maxYear = maximumDate?.getFullYear() || new Date().getFullYear();
-  const minYear = minimumDate?.getFullYear() || 1940;
+  const maxYear = effectiveMaxDate?.getFullYear() || new Date().getFullYear();
+  const minYear = effectiveMinDate?.getFullYear() || 1940;
   for (let y = maxYear; y >= minYear; y--) {
     years.push(y);
   }
@@ -74,7 +83,7 @@ export function DatePicker({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      {label && <Text style={styles.label}>{label}</Text>}
 
       <TouchableOpacity
         onPress={() => setShowPicker(true)}

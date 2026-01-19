@@ -14,7 +14,9 @@ interface SliderProps {
   minimumValue: number;
   maximumValue: number;
   step?: number;
-  label: string;
+  label?: string;
+  // Labels map for step values (optional, for future use)
+  labels?: Record<number, string>;
   valueLabel?: (value: number) => string;
 }
 
@@ -25,6 +27,7 @@ export function Slider({
   maximumValue,
   step = 1,
   label,
+  labels,
   valueLabel,
 }: SliderProps) {
   const [sliderWidth, setSliderWidth] = React.useState(0);
@@ -62,7 +65,7 @@ export function Slider({
         <View style={styles.labelRow}>
           <Text style={styles.label}>{label}</Text>
           <Text style={styles.valueText}>
-            {valueLabel ? valueLabel(value) : value}
+            {valueLabel ? valueLabel(value) : labels?.[value] ?? value}
           </Text>
         </View>
       )}

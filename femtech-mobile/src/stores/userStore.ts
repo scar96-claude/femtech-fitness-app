@@ -54,14 +54,14 @@ export const useUserStore = create<UserState>((set) => ({
   },
 
   updateProfile: async (data) => {
-    const response = await apiClient.updateProfile(data);
+    const response = await apiClient.updateProfile(data as Record<string, unknown>);
     set((state) => ({
       profile: { ...state.profile, ...response.data } as UserProfile,
     }));
   },
 
   updateHealthMetadata: async (data) => {
-    const response = await apiClient.updateHealthMetadata(data);
+    const response = await apiClient.updateHealthMetadata(data as Record<string, unknown>);
     set((state) => ({
       healthMetadata: { ...state.healthMetadata, ...response.data } as HealthMetadata,
     }));
