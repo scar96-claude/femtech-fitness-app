@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
+import { getItem } from '@/utils/storage';
 import { useAuthStore } from '@/stores/authStore';
 import { CONFIG } from '@/constants/config';
 import { useEffect, useState } from 'react';
@@ -13,7 +13,7 @@ export default function Index() {
   }, []);
 
   const checkOnboarding = async () => {
-    const complete = await SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.ONBOARDING_COMPLETE);
+    const complete = await getItem(CONFIG.STORAGE_KEYS.ONBOARDING_COMPLETE);
     setOnboardingComplete(complete === 'true');
   };
 

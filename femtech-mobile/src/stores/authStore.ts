@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import * as SecureStore from 'expo-secure-store';
+import { getItem, setItem, removeItem } from '@/utils/storage';
 import { CONFIG } from '@/constants/config';
 import { apiClient } from '@/services/api';
 
@@ -22,8 +22,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   initialize: async () => {
     try {
-      const token = await SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-      const userId = await SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.USER_ID);
+      const token = await getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+      const userId = await getItem(CONFIG.STORAGE_KEYS.USER_ID);
 
       if (token && userId) {
         // Validate token by fetching profile
@@ -32,8 +32,8 @@ export const useAuthStore = create<AuthState>((set) => ({
           set({ isAuthenticated: true, userId, isLoading: false });
         } catch {
           // Token invalid, clear storage
-          await SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-          await SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.USER_ID);
+          await removeItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+          await removeItem(CONFIG.STORAGE_KEYS.USER_ID);
           set({ isAuthenticated: false, userId: null, isLoading: false });
         }
       } else {
@@ -49,8 +49,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     const response = await apiClient.login(email, password);
     const { token, userId } = response.data;
 
-    await SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.AUTH_TOKEN, token);
-    await SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.USER_ID, userId);
+    await setItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN, token);
+    await setItem(CONFIG.STORAGE_KEYS.USER_ID, userId);
 
     set({ isAuthenticated: true, userId });
   },
@@ -59,16 +59,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     const response = await apiClient.register({ email, password });
     const { token, userId } = response.data;
 
-    await SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.AUTH_TOKEN, token);
-    await SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.USER_ID, userId);
+    await setItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN, token);
+    await setItem(CONFIG.STORAGE_KEYS.USER_ID, userId);
 
     set({ isAuthenticated: true, userId });
   },
 
   logout: async () => {
-    await SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-    await SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.USER_ID);
-    await SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.ONBOARDING_COMPLETE);
+    await removeItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+    await removeItem(CONFIG.STORAGE_KEYS.USER_ID);
+    await removeItem(CONFIG.STORAGE_KEYS.ONBOARDING_COMPLETE);
 
     set({ isAuthenticated: false, userId: null });
   },

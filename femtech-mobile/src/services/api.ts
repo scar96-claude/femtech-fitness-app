@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import { getItem, removeItem } from '@/utils/storage';
 import { CONFIG } from '@/constants/config';
 
 // Create axios instance
@@ -14,7 +14,7 @@ export const api = axios.create({
 // Request interceptor - add auth token
 api.interceptors.request.use(
   async (config) => {
-    const token = await SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+    const token = await getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,7 +29,7 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       // Clear auth and redirect to login
-      await SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+      await removeItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
       // Navigation will be handled by auth state change
     }
     return Promise.reject(error);
