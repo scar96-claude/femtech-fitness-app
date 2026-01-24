@@ -1,16 +1,24 @@
-import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 /**
- * Async storage helpers using Expo SecureStore
- * Provides type-safe access to local storage
+ * Async storage helpers with platform-aware implementation
+ * Uses SecureStore on native, localStorage on web
  */
+
+// Import SecureStore conditionally based on platform
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const SecureStore = Platform.OS !== 'web' ? require('expo-secure-store') : null;
 
 /**
  * Store a string value securely
  */
 export async function setItem(key: string, value: string): Promise<void> {
   try {
-    await SecureStore.setItemAsync(key, value);
+    if (Platform.OS === 'web') {
+      localStorage.setItem(key, value);
+    } else if (SecureStore) {
+      await SecureStore.setItemAsync(key, value);
+    }
   } catch (error) {
     console.error(`Error storing ${key}:`, error);
     throw error;
@@ -22,7 +30,12 @@ export async function setItem(key: string, value: string): Promise<void> {
  */
 export async function getItem(key: string): Promise<string | null> {
   try {
-    return await SecureStore.getItemAsync(key);
+    if (Platform.OS === 'web') {
+      return localStorage.getItem(key);
+    } else if (SecureStore) {
+      return await SecureStore.getItemAsync(key);
+    }
+    return null;
   } catch (error) {
     console.error(`Error retrieving ${key}:`, error);
     return null;
@@ -34,7 +47,11 @@ export async function getItem(key: string): Promise<string | null> {
  */
 export async function removeItem(key: string): Promise<void> {
   try {
-    await SecureStore.deleteItemAsync(key);
+    if (Platform.OS === 'web') {
+      localStorage.removeItem(key);
+    } else if (SecureStore) {
+      await SecureStore.deleteItemAsync(key);
+    }
   } catch (error) {
     console.error(`Error removing ${key}:`, error);
     throw error;
