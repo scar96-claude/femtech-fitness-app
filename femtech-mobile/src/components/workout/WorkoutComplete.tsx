@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button';
 import { Trophy, Clock, Dumbbell, Flame, Share2 } from 'lucide-react-native';
 import { WorkoutLog } from '@/types';
-import * as Haptics from 'expo-haptics';
+import { impactLight, impactMedium, notificationSuccess, selectionChanged } from '@/utils/haptics';
 import { COLORS } from '@/constants/colors';
 
 interface WorkoutCompleteProps {
@@ -25,7 +25,7 @@ export function WorkoutComplete({
   onDone,
 }: WorkoutCompleteProps) {
   useEffect(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    notificationSuccess();
   }, []);
 
   const totalSets = workoutLog.exercises.reduce(

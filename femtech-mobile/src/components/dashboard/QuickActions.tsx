@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Droplet, Moon, Zap, Brain } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { impactLight, impactMedium, notificationSuccess, selectionChanged } from '@/utils/haptics';
 import { COLORS } from '@/constants/colors';
 
 interface QuickActionsProps {
@@ -20,7 +20,7 @@ export function QuickActions({
   onLogSymptoms,
 }: QuickActionsProps) {
   const handlePress = (action: (() => void) | undefined) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    impactLight();
     action?.();
   };
 

@@ -13,6 +13,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  mockLogin: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -26,7 +27,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       const userId = await getItem(CONFIG.STORAGE_KEYS.USER_ID);
 
       if (token && userId) {
-        // Validate token by fetching profile
+        // For mock token, just authenticate
+        if (token === 'mock-token') {
+          set({ isAuthenticated: true, userId, isLoading: false });
+          return;
+        }
+        // Validate real token by fetching profile
         try {
           await apiClient.getProfile();
           set({ isAuthenticated: true, userId, isLoading: false });
@@ -71,5 +77,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     await removeItem(CONFIG.STORAGE_KEYS.ONBOARDING_COMPLETE);
 
     set({ isAuthenticated: false, userId: null });
+  },
+
+  // Mock login for testing UI without backend
+  mockLogin: async () => {
+    const mockUserId = 'mock-user-123';
+    const mockToken = 'mock-token';
+
+    await setItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN, mockToken);
+    await setItem(CONFIG.STORAGE_KEYS.USER_ID, mockUserId);
+    await setItem(CONFIG.STORAGE_KEYS.ONBOARDING_COMPLETE, 'true');
+
+    set({ isAuthenticated: true, userId: mockUserId });
   },
 }));

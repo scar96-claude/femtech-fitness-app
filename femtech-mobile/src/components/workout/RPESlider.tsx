@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useWorkoutStore } from '@/stores/workoutStore';
-import * as Haptics from 'expo-haptics';
+import { impactLight, impactMedium, notificationSuccess, selectionChanged } from '@/utils/haptics';
 import { COLORS } from '@/constants/colors';
 
 const RPE_COLORS: Record<number, string> = {
@@ -26,7 +26,7 @@ export function RPESlider({ onSubmit }: RPESliderProps) {
   const exercise = getCurrentExercise();
 
   const handleSelect = (rpe: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    impactMedium();
     setRpe(rpe);
     onSubmit(rpe);
   };

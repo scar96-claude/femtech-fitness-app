@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { SkipForward, Volume2, VolumeX } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { impactLight, impactMedium, notificationSuccess, selectionChanged } from '@/utils/haptics';
 import { COLORS } from '@/constants/colors';
 
 export function RestTimer() {
@@ -39,13 +39,13 @@ export function RestTimer() {
     if (restTimeRemaining === 0) {
       finishRest();
       if (soundEnabled) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        notificationSuccess();
       }
     }
 
     // Warning haptic at 5 seconds
     if (restTimeRemaining === 5 && soundEnabled) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      impactMedium();
     }
   }, [restTimeRemaining, soundEnabled, finishRest]);
 
@@ -56,7 +56,7 @@ export function RestTimer() {
   };
 
   const handleSkip = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    impactLight();
     skipRest();
   };
 

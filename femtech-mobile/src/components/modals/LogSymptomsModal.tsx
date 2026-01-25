@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { X, Check } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
-import * as Haptics from 'expo-haptics';
+import { impactLight, impactMedium, notificationSuccess, selectionChanged } from '@/utils/haptics';
 import { apiClient } from '@/services/api';
 import { COLORS } from '@/constants/colors';
 
@@ -32,7 +32,7 @@ export function LogSymptomsModal({ visible, onClose }: LogSymptomsModalProps) {
   const [success, setSuccess] = useState(false);
 
   const handleRating = (symptomId: string, rating: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    impactLight();
     setSymptoms((prev) => ({ ...prev, [symptomId]: rating }));
   };
 

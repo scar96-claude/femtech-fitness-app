@@ -1,12 +1,20 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/common/Logo';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '@/constants/colors';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function WelcomeScreen() {
+  const { mockLogin } = useAuthStore();
+
+  const handleDemoLogin = async () => {
+    await mockLogin();
+    router.replace('/(tabs)');
+  };
+
   return (
     <LinearGradient
       colors={[COLORS.primary[500], COLORS.primary[600]]}
@@ -44,6 +52,13 @@ export default function WelcomeScreen() {
               style={styles.ghostButton}
             />
           </Link>
+
+          {/* Demo Login Button */}
+          <TouchableOpacity onPress={handleDemoLogin} style={styles.demoButton}>
+            <Text style={styles.demoButtonText}>
+              Try Demo (No Account Needed)
+            </Text>
+          </TouchableOpacity>
 
           <Text style={styles.disclaimer}>
             By continuing, you agree to our Terms of Service and Privacy Policy
@@ -86,6 +101,20 @@ const styles = StyleSheet.create({
   },
   ghostButton: {
     marginTop: 12,
+  },
+  demoButton: {
+    marginTop: 24,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 12,
+    borderStyle: 'dashed',
+  },
+  demoButtonText: {
+    color: COLORS.white,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '500',
   },
   disclaimer: {
     color: 'rgba(255, 255, 255, 0.6)',
