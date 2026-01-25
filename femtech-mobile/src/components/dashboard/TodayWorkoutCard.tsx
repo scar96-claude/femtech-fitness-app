@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Play, Dumbbell, Clock, Zap, Moon } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { impactLight, impactMedium, notificationSuccess, selectionChanged } from '@/utils/haptics';
 import { COLORS } from '@/constants/colors';
 
 interface TodayWorkoutCardProps {
@@ -24,7 +24,7 @@ export function TodayWorkoutCard({
   isReproductive,
 }: TodayWorkoutCardProps) {
   const handleStartWorkout = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    impactMedium();
     if (workout) {
       router.push(`/(tabs)/workout?id=${workout.id}`);
     }

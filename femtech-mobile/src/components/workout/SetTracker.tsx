@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { useWorkoutStore } from '@/stores/workoutStore';
-import * as Haptics from 'expo-haptics';
+import { impactLight, impactMedium, notificationSuccess, selectionChanged } from '@/utils/haptics';
 import { COLORS } from '@/constants/colors';
 
 interface SetTrackerProps {
@@ -25,7 +25,7 @@ export function SetTracker({
   const completedSets = exerciseLog?.sets.length || 0;
 
   const handleCompleteSet = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    notificationSuccess();
     onCompleteSet();
   };
 

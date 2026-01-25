@@ -6,7 +6,7 @@ import {
   TouchableOpacityProps,
   StyleSheet,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
+import { impactLight } from '@/utils/haptics';
 import { COLORS } from '@/constants/colors';
 
 interface ButtonProps extends TouchableOpacityProps {
@@ -29,7 +29,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const handlePress = (e: unknown) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    impactLight();
     onPress?.(e as never);
   };
 

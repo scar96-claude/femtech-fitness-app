@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Minus, Plus } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { impactLight, impactMedium, notificationSuccess, selectionChanged } from '@/utils/haptics';
 import { COLORS } from '@/constants/colors';
 
 interface WeightInputProps {
@@ -19,7 +19,7 @@ export function WeightInput({ previousWeight, onWeightChange }: WeightInputProps
   }, [weight, onWeightChange]);
 
   const adjustWeight = (delta: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    impactLight();
     const current = parseFloat(weight) || 0;
     const newWeight = Math.max(0, current + delta);
     setWeight(newWeight.toString());

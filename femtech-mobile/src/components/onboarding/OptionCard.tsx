@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { Check } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { impactLight, impactMedium, notificationSuccess, selectionChanged } from '@/utils/haptics';
 import { COLORS } from '@/constants/colors';
 
 interface OptionCardProps {
@@ -20,7 +20,7 @@ export function OptionCard({
   onSelect,
 }: OptionCardProps) {
   const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    impactLight();
     onSelect();
   };
 
