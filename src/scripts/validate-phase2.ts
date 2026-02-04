@@ -117,6 +117,14 @@ async function validatePhase2() {
   console.log(`  35-day cycle, 12 days ago → ${scaledPhase} ${scaledTest ? '✅' : '❌ (expected: follicular)'}`);
   if (!scaledTest) allPassed = false;
 
+  // Future last period date should clamp to day 1
+  const futureDate = new Date(now);
+  futureDate.setDate(now.getDate() + 5);
+  const futurePhase = getCurrentPhase(futureDate, 28);
+  const futureTest = futurePhase === 'menstrual';
+  console.log(`  Last period 5 days in future → ${futurePhase} ${futureTest ? '✅' : '❌ (expected: menstrual)'}`);
+  if (!futureTest) allPassed = false;
+
   console.log('');
 
   // ============================================================

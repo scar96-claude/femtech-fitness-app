@@ -15,16 +15,29 @@ import { Phase, PhaseConfig } from './types';
  * @param avgCycleLength - Average cycle length in days (default: 28)
  * @returns Current menstrual phase
  */
+function normalizeCycleLength(avgCycleLength: number): number {
+  if (!Number.isFinite(avgCycleLength) || avgCycleLength <= 0) {
+    return 28;
+  }
+  return Math.round(avgCycleLength);
+}
+
+function getDaysSinceStart(lastPeriodDate: Date): number {
+  const today = new Date();
+  const daysSinceStart = differenceInDays(today, lastPeriodDate);
+  return Math.max(0, daysSinceStart);
+}
+
 export function getCurrentPhase(
   lastPeriodDate: Date,
   avgCycleLength: number = 28
 ): Phase {
-  const today = new Date();
-  const daysSinceStart = differenceInDays(today, lastPeriodDate);
-  const dayOfCycle = (daysSinceStart % avgCycleLength) + 1; // 1-indexed
+  const normalizedCycleLength = normalizeCycleLength(avgCycleLength);
+  const daysSinceStart = getDaysSinceStart(lastPeriodDate);
+  const dayOfCycle = (daysSinceStart % normalizedCycleLength) + 1; // 1-indexed
 
   // Scale phases proportionally for non-28-day cycles
-  const scale = avgCycleLength / 28;
+  const scale = normalizedCycleLength / 28;
 
   if (dayOfCycle <= Math.round(5 * scale)) return 'menstrual';
   if (dayOfCycle <= Math.round(14 * scale)) return 'follicular';
@@ -92,7 +105,7 @@ export function getDayOfCycle(
   lastPeriodDate: Date,
   avgCycleLength: number = 28
 ): number {
-  const today = new Date();
-  const daysSinceStart = differenceInDays(today, lastPeriodDate);
-  return (daysSinceStart % avgCycleLength) + 1;
+  const normalizedCycleLength = normalizeCycleLength(avgCycleLength);
+  const daysSinceStart = getDaysSinceStart(lastPeriodDate);
+  return (daysSinceStart % normalizedCycleLength) + 1;
 }
