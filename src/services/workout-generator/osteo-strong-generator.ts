@@ -34,7 +34,7 @@ const MOVEMENT_PATTERNS = ['SQUAT', 'HINGE', 'PUSH', 'PULL', 'CARRY'] as const;
  * Prioritizes bone density exercises and avoids cortisol spikes.
  *
  * Key differences from cycle-sync:
- * - Never uses HIIT (only SIT or LISS for cardio)
+ * - Never uses HIIT (SIT only for cardio)
  * - Longer rest periods (150s vs 60-120s)
  * - Prioritizes menopausePriority exercises
  * - Includes impact exercises for bone health
@@ -113,7 +113,7 @@ export async function generateOsteoStrongWorkout(
     });
   }
 
-  // 4. Build cardio block - NEVER HIIT, only SIT or LISS
+  // 4. Build cardio block - NEVER HIIT, SIT only
   let cardio: CardioBlock | undefined = undefined;
   if (input.includeCardio) {
     cardio = {

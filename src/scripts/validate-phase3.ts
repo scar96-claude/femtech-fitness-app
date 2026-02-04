@@ -189,6 +189,18 @@ async function validatePhase3() {
   console.log(`  Burpee exercises remaining: ${burpeeExercises.length} ${burpeeTest ? '✅' : '❌ (expected: 0)'}`);
   if (!burpeeTest) allPassed = false;
 
+  // Verify substitutions are generated for pelvic-unsafe exercises
+  const pelvicSubstitution = pelvicFilterResult.substitutions.find(
+    (sub) => sub.originalExerciseName === 'Sit-Up'
+  );
+  const pelvicSubstitutionTest =
+    pelvicFilterResult.substitutions.length > 0 &&
+    pelvicSubstitution?.substitutes.some(
+      (substitute) => substitute.exerciseName === 'dead bug (modified)'
+    );
+  console.log(`  Pelvic substitutions generated: ${pelvicSubstitutionTest ? '✅' : '❌'}`);
+  if (!pelvicSubstitutionTest) allPassed = false;
+
   // Verify pelvicRisk=false returns all exercises
   const noPelvicRisk = applyPelvicFilter(allExercises, false);
   const noPelvicTest = noPelvicRisk.filtered.length === allExercises.length;
@@ -215,6 +227,18 @@ async function validatePhase3() {
   const spinalTest = spinalFlexion.length === 0;
   console.log(`  Spinal flexion exercises remaining: ${spinalFlexion.length} ${spinalTest ? '✅' : '❌ (expected: 0)'}`);
   if (!spinalTest) allPassed = false;
+
+  // Verify substitutions are generated for bone-unsafe exercises
+  const boneSubstitution = boneFilterResult.substitutions.find(
+    (sub) => sub.originalExerciseName === 'Sit-Up'
+  );
+  const boneSubstitutionTest =
+    boneFilterResult.substitutions.length > 0 &&
+    boneSubstitution?.substitutes.some(
+      (substitute) => substitute.exerciseName === 'bird dog'
+    );
+  console.log(`  Bone substitutions generated: ${boneSubstitutionTest ? '✅' : '❌'}`);
+  if (!boneSubstitutionTest) allPassed = false;
 
   // Verify boneDensityRisk=false returns all exercises
   const noBoneRisk = applyBoneDensityFilter(allExercises, false);

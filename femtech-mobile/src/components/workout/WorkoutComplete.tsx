@@ -69,7 +69,7 @@ export function WorkoutComplete({
           </View>
 
           <Text style={styles.title}>Great Work! 🎉</Text>
-          <Text style={styles.subtitle}>{workoutName} complete</Text>
+          <Text style={styles.subtitle}>{workoutName} completed</Text>
         </View>
 
         {/* Stats Grid */}

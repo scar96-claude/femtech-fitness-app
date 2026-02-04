@@ -36,8 +36,18 @@ const CYCLE_PHASES: Record<string, CyclePhaseInfo> = {
   },
 };
 
+function normalizeCycleLength(avgCycleLength: number): number {
+  if (!Number.isFinite(avgCycleLength) || avgCycleLength <= 0) {
+    return 28;
+  }
+  return Math.round(avgCycleLength);
+}
+
 function differenceInDays(date1: Date, date2: Date): number {
-  const diffTime = Math.abs(date1.getTime() - date2.getTime());
+  const diffTime = date1.getTime() - date2.getTime();
+  if (diffTime <= 0) {
+    return 0;
+  }
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 }
 
@@ -45,13 +55,14 @@ export function useCyclePhase(lastPeriodDate: string | null, avgCycleLength: num
   return useMemo(() => {
     if (!lastPeriodDate) return null;
 
+    const normalizedCycleLength = normalizeCycleLength(avgCycleLength);
     const today = new Date();
     const periodStart = new Date(lastPeriodDate);
     const daysSinceStart = differenceInDays(today, periodStart);
-    const cycleDay = (daysSinceStart % avgCycleLength) + 1;
+    const cycleDay = (daysSinceStart % normalizedCycleLength) + 1;
 
     // Scale phases for non-28-day cycles
-    const scale = avgCycleLength / 28;
+    const scale = normalizedCycleLength / 28;
 
     let phase: CyclePhaseInfo;
     let daysUntilNextPhase: number;
@@ -67,15 +78,15 @@ export function useCyclePhase(lastPeriodDate: string | null, avgCycleLength: num
       daysUntilNextPhase = Math.round(17 * scale) - cycleDay + 1;
     } else {
       phase = CYCLE_PHASES.luteal;
-      daysUntilNextPhase = avgCycleLength - cycleDay + 1;
+      daysUntilNextPhase = normalizedCycleLength - cycleDay + 1;
     }
 
     return {
       phase,
       cycleDay,
       daysUntilNextPhase,
-      totalDays: avgCycleLength,
-      progress: cycleDay / avgCycleLength,
+      totalDays: normalizedCycleLength,
+      progress: cycleDay / normalizedCycleLength,
     };
   }, [lastPeriodDate, avgCycleLength]);
 }
